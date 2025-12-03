@@ -1,33 +1,46 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../../types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const { width } = Dimensions.get('window');
+type Nav = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
 
 function MaskedText() {
+  const navigation = useNavigation<Nav>();
+  const onClick = () => {
+    navigation.navigate('SignUp');
+    console.log('Dasfgfa');
+  };
   return (
     <View style={styles.maskedTextContainer}>
       <View style={styles.textWrapper}>
         <Text style={{ color: '#989898', fontWeight: 900 }}>
           계정이 없으신가요?
         </Text>
-        <MaskedView
-          style={styles.maskedView}
-          maskElement={
-            <View style={styles.maskElement}>
-              <Text style={styles.maskText}>회원가입</Text>
-            </View>
-          }
-        >
-          <LinearGradient
-            colors={['#FFB153', '#6200FF']}
-            locations={[0.45, 0.95]}
-            start={{ x: 1, y: 0 }}
-            end={{ x: 0, y: 0 }}
-            style={styles.gradient}
-          />
-        </MaskedView>
+        <Pressable onPress={onClick}>
+          <MaskedView
+            style={styles.maskedView}
+            maskElement={
+              <View style={styles.maskElement}>
+                <Text style={styles.maskText}>
+                  회원가입
+                </Text>
+              </View>
+            }
+          >
+            <LinearGradient
+              colors={['#FFB153', '#6200FF']}
+              locations={[0.45, 0.95]}
+              start={{ x: 1, y: 0 }}
+              end={{ x: 0, y: 0 }}
+              style={styles.gradient}
+            />
+          </MaskedView>
+        </Pressable>
       </View>
     </View>
   );

@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useState } from 'react';
+import { RootStackParamList } from './types/navigation';
 import SignIn from './src/pages/SignIn';
 import SignUp from './src/pages/SignUp';
 
@@ -11,11 +12,6 @@ export type LoggedInParamList = {
   Settings: undefined;
   Delivery: undefined;
   Complete: { orderId: string };
-};
-
-export type RootStackParamList = {
-  SignIn: undefined;
-  SignUp: undefined;
 };
 
 const Tab = createBottomTabNavigator();
