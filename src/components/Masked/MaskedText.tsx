@@ -2,33 +2,26 @@ import React from 'react';
 import { View, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
-import { useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../../types/navigation';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const { width } = Dimensions.get('window');
-type Nav = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
 
-function MaskedText() {
-  const navigation = useNavigation<Nav>();
-  const onClick = () => {
-    navigation.navigate('SignUp');
-    console.log('Dasfgfa');
-  };
+interface MaskedTextProps {
+  labelText: string;
+  maskedText: string;
+  onPress?: () => void;
+}
+
+function MaskedText({ labelText, maskedText, onPress }: MaskedTextProps) {
   return (
     <View style={styles.maskedTextContainer}>
       <View style={styles.textWrapper}>
-        <Text style={{ color: '#989898', fontWeight: 900 }}>
-          계정이 없으신가요?
-        </Text>
-        <Pressable onPress={onClick}>
+        <Text style={{ color: '#989898', fontWeight: 900 }}>{labelText}</Text>
+        <Pressable onPress={onPress}>
           <MaskedView
             style={styles.maskedView}
             maskElement={
               <View style={styles.maskElement}>
-                <Text style={styles.maskText}>
-                  회원가입
-                </Text>
+                <Text style={styles.maskText}>{maskedText}</Text>
               </View>
             }
           >
