@@ -1,13 +1,21 @@
-import { View, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import Star from '../../components/Star';
 
 function SignInComplete() {
   return (
-    <View>
-      <View>
-        <Text>dasfd</Text>
-      </View>
+    <View style={styles.container}>
+      <Star />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+});
 
 export default SignInComplete;
