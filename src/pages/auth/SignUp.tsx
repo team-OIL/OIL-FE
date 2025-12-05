@@ -13,8 +13,10 @@ type Nav = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
 
 function SignUp() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const emailRef = useRef<TextInput | null>(null);
+  const nameRef = useRef<TextInput | null>(null);
   const passwordRef = useRef<TextInput | null>(null);
   const navigation = useNavigation<Nav>();
 
@@ -22,6 +24,7 @@ function SignUp() {
     (text: string) => setEmail(text.trim()),
     [],
   );
+  const onChangeName = useCallback((text: string) => setName(text.trim()), []);
   const onChangePassword = useCallback(
     (text: string) => setPassword(text.trim()),
     [],
@@ -31,22 +34,31 @@ function SignUp() {
 
   const onSubmit = useCallback(() => {
     if (!email) return Alert.alert('알림', '이메일을 입력해주세요.');
+    if (!name) return Alert.alert('알림', '이름을 입력해주세요.');
     if (!password) return Alert.alert('알림', '비밀번호를 입력해주세요.');
     Alert.alert('알림', '회원가입 완료!');
-    console.log('Navigate to next screen');
-  }, [email, password]);
+    navigation.navigate('SignIn');
+  }, [email, name, password]);
 
-  const canGoNext = email && password;
+  const canGoNext = email && name && password;
 
   return (
     <DismissKeyboardView>
       <View style={styles.container}>
-        <MaskedTitle />
+        <MaskedTitle title="환영합니다" />
         <Input
           label="아이디"
           value={email}
           onChangeText={onChangeEmail}
           ref={emailRef}
+          returnKeyType="next"
+          onSubmitEditing={() => nameRef.current?.focus()}
+        />
+        <Input
+          label="이름"
+          value={name}
+          onChangeText={onChangeName}
+          ref={nameRef}
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current?.focus()}
         />
