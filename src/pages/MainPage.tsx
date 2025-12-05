@@ -7,9 +7,10 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
-import Star from '../../components/Star';
-import Button from '../../components/button';
+import Star from '../components/Star';
+import Button from '../components/button';
 import { Image } from 'react-native';
+import { IMAGES } from '../assets';
 
 const MainPage = () => {
   // 실제 로직 (예: 과제 시작 버튼 핸들러)은 생략합니다.
@@ -25,7 +26,7 @@ const MainPage = () => {
         <View style={styles.header}>
           {/* 상태바 영역 - 실제 앱에서는 시스템 상태바를 사용하거나 커스텀합니다. */}
           <View style={styles.statusBarPlaceholder}>
-            <Image source={require('../../assets/logo.png')} />
+            <Image source={IMAGES.logo} />
             {/* 우측 알림 아이콘 */}
             <Text style={styles.notificationIcon}>🔔</Text>
           </View>
