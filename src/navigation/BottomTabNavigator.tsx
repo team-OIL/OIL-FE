@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Image } from 'react-native';
+import { Text, Image, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MainPage from '../pages/MainPage';
 import TaskPage from '../pages/TaskPage';
@@ -19,14 +19,30 @@ const BottomTabNavigator = () => {
     fontWeight: 'normal' as const,
     color: '#888',
   };
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: { height: 70 },
+        tabBarStyle: {
+          height: 100,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          backgroundColor: '#ffffffff',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+        },
         tabBarLabelStyle: { fontSize: 12 },
         tabBarActiveTintColor: '#000', // 선택된 탭 글자색
         tabBarInactiveTintColor: '#888', // 선택 안 된 탭 글자색
+        tabBarItemStyle: {
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+        },
       }}
     >
       <Tab.Screen

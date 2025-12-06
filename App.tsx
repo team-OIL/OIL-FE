@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
@@ -8,7 +8,6 @@ import { RootStackParamList } from './types/navigation';
 import SignIn from './src/pages/auth/SignIn';
 import SignUp from './src/pages/auth/SignUp';
 import SignInComplete from './src/pages/auth/SignInComplete';
-import MainPage from './src/pages/main/MainPage';
 
 export type LoggedInParamList = {
   Orders: undefined;
@@ -21,9 +20,14 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App() {
+  const MyTheme = {
+    ...DefaultTheme,
+    colors: { ...DefaultTheme.colors, background: '#000' },
+  };
+
   const [isLoggedIn, setLoggedIn] = useState(false);
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyTheme}>
       <Stack.Navigator>
         <Stack.Screen
           name="SignIn"

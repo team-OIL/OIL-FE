@@ -1,16 +1,9 @@
-// MainPage.tsx (예시)
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Star from '../components/Star';
-import Button from '../components/button';
 import { Image } from 'react-native';
 import { IMAGES } from '../assets';
+import MainButton from '../components/mainButton';
 
 const MainPage = () => {
   // 실제 로직 (예: 과제 시작 버튼 핸들러)은 생략합니다.
@@ -28,7 +21,7 @@ const MainPage = () => {
           <View style={styles.statusBarPlaceholder}>
             <Image source={IMAGES.logo} />
             {/* 우측 알림 아이콘 */}
-            <Text style={styles.notificationIcon}>🔔</Text>
+            <Image source={IMAGES.alarm} />
           </View>
 
           {/* 명언/메시지 영역 */}
@@ -43,11 +36,11 @@ const MainPage = () => {
         <View style={styles.mainContent}>
           <Text style={styles.todayTaskLabel}>오늘의 과제</Text>
           <Text style={styles.taskName}>바람 느끼기</Text>
+
           <Star />
-          {/* Button 컴포넌트 (시작 버튼) */}
-          {/* Button 컴포넌트는 기존에 사용하던 props를 가정하여 사용합니다. */}
+
           <View style={styles.buttonZone}>
-            <Button onPress={onStartTask} label="시작" />
+            <MainButton onPress={onStartTask} label="시작" />
           </View>
         </View>
       </View>
@@ -65,16 +58,22 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
 
-  // --- 1. Header (상단) 스타일 ---
   header: {
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 20,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 15,
   },
   statusBarPlaceholder: {
+    width: '90%',
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
     // 실제 시간/배터리 정보는 RN에서 시스템적으로 처리됩니다.
   },
   logoPlaceholder: {
@@ -92,9 +91,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 10,
-    alignSelf: 'flex-start',
-    marginTop: 5,
-    marginBottom: 20,
     maxWidth: '90%',
   },
   quoteText: {
@@ -106,7 +102,8 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 30,
+    paddingVertical: 30,
+    backgroundColor: '#fff',
   },
   todayTaskLabel: {
     fontSize: 16,
@@ -117,43 +114,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 20,
   },
   buttonZone: {
     width: '100%',
-    paddingHorizontal: 20,
-    marginTop: 50, // Star 컴포넌트 아래 간격
-  },
-
-  // --- 3. Bottom Nav (하단 탭) 스타일 ---
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    height: '30%',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    backgroundColor: '#fff',
-    height: 70, // 탭 바 높이 설정
-    paddingBottom: 5, // 하단 safe area 대비 패딩
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 5,
-  },
-  navIcon: {
-    fontSize: 24,
-    color: '#333',
-    marginBottom: 2,
-  },
-  navLabel: {
-    fontSize: 12,
-    color: '#888',
-  },
-  navLabelActive: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#000', // 활성화된 '홈' 색상
+    backgroundColor: 'transparent',
   },
 });
 

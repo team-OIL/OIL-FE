@@ -4,13 +4,17 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const CIRCLE_SIZE = 250;
 
-const Star = () => {
+interface StarProps {
+  paddingBottom?: number;
+}
+
+const Star = ({ paddingBottom }: StarProps) => {
   const topColors = ['#130071', '#E380FF'];
   const bottomColors = ['#FF9747', '#650027'];
   const gradientColors = [...topColors, '#FFFFFF', ...bottomColors];
 
   return (
-    <View style={styles.container}>
+    <View style={{ ...styles.container, paddingBottom }}>
       <View style={styles.shadowContainer}>
         <LinearGradient
           colors={gradientColors}
@@ -29,7 +33,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 200,
   },
 
   shadowContainer: {

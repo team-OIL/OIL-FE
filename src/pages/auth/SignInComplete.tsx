@@ -22,7 +22,7 @@ function SignInComplete({ route }: { route: SignInCompleteRouteProp }) {
       <View style={styles.titleZone}>
         <MaskedTitle title="반갑습니다" sudText={`${name}님`} />
       </View>
-      <Star />
+      <Star paddingBottom={150} />
       <View style={styles.buttonZone}>
         <Button
           label="시작"
