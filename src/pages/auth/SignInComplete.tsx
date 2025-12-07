@@ -11,18 +11,18 @@ type Nav = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
 type SignInCompleteRouteProp = RouteProp<RootStackParamList, 'SignInComplete'>;
 
 function SignInComplete({ route }: { route: SignInCompleteRouteProp }) {
-  const { name } = route.params;
+  const { name, isTaskStarted } = route.params;
   const navigation = useNavigation<Nav>();
 
   const onClickStart = () => {
-    navigation.navigate('Main');
+    navigation.navigate('MainPage');
   };
   return (
     <View style={styles.container}>
       <View style={styles.titleZone}>
         <MaskedTitle title="반갑습니다" sudText={`${name}님`} />
       </View>
-      <Star />
+      <Star paddingBottom={150} isTaskStarted={isTaskStarted} />
       <View style={styles.buttonZone}>
         <Button
           label="시작"
