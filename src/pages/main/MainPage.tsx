@@ -56,6 +56,9 @@ const MainPage = () => {
     setIsTaskStarted(prev => !prev);
     setButtonLabel(prev => !prev);
     setTodayTaskLabel(prev => !prev);
+    if (isPaused && second === 0) {
+      setSecond(300);
+    }
     setIsPaused(prev => !prev);
     // 네비게이션 로직 또는 API 호출 로직 추가
   };
