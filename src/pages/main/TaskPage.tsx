@@ -13,7 +13,7 @@ type TaskPageRouteProp = RouteProp<RootStackParamList, 'BottomTabNavigator'>;
 
 export default function TaskPage() {
   const route = useRoute<TaskPageRouteProp>();
-  const { taskSuccess } = route.params;
+  const { taskSuccess } = route.params || {};
   const navigation = useNavigation<Nav>();
 
   const completedTaskList = [

@@ -15,7 +15,7 @@ type MainPageRouteProp = RouteProp<RootStackParamList, 'BottomTabNavigator'>;
 
 const MainPage = () => {
   const route = useRoute<MainPageRouteProp>();
-  const { taskSuccess } = route.params;
+  const { taskSuccess } = route.params || {};
   const navigation = useNavigation<Nav>();
   const [isTaskStarted, setIsTaskStarted] = useState(true);
   const [buttonLabel, setButtonLabel] = useState(false);
