@@ -8,6 +8,7 @@ import { RootStackParamList } from './types/navigation';
 import SignIn from './src/pages/auth/SignIn';
 import SignUp from './src/pages/auth/SignUp';
 import SignInComplete from './src/pages/auth/SignInComplete';
+import AlarmSettings from './src/pages/auth/AlarmSettingsPage';
 
 export type LoggedInParamList = {
   Orders: undefined;
@@ -52,8 +53,15 @@ function App() {
           }}
         />
         <Stack.Screen
-          name="MainPage"
+          name="BottomTabNavigator"
           component={BottomTabNavigator}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="AlarmSettings"
+          component={AlarmSettings}
           options={{
             headerShown: false,
           }}
