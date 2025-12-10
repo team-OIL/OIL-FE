@@ -8,21 +8,22 @@ import Animated, {
   useAnimatedStyle,
   runOnJS,
 } from 'react-native-reanimated';
+import { TaskStage } from '../../types/TaskStage';
 
 interface StarProps {
   paddingBottom?: number;
-  isTaskStarted?: boolean;
+  taskStage?: TaskStage;
   second?: number;
-  setIsTaskEnd?: (value: boolean | ((prev: boolean) => boolean)) => void;
+  setTaskStage?: React.Dispatch<React.SetStateAction<TaskStage>>;
 }
 
 const CIRCLE_SIZE = 250;
 
 const Star = ({
   paddingBottom,
-  isTaskStarted,
+  taskStage,
   second = 300,
-  setIsTaskEnd = () => {},
+  setTaskStage,
 }: StarProps) => {
   const topColors = ['#130071', '#E380FF'];
   const bottomColors = ['#FF9747', '#650027'];
@@ -35,32 +36,31 @@ const Star = ({
       duration: 1000,
       easing: Easing.out(Easing.ease),
     });
-  }, [isTaskStarted]);
+  }, [taskStage]);
 
-  const handleLayout = () => {
-    translateY.value = withTiming(
-      -CIRCLE_SIZE,
-      {
-        duration: second * 1400,
-        easing: Easing.out(Easing.ease),
-      },
-      finished => {
-        if (finished) {
-          runOnJS(setIsTaskEnd)(prev => !prev);
-        }
-      },
-    );
-  };
+  useEffect(() => {
+    if (taskStage === 'progress') {
+      translateY.value = withTiming(
+        -CIRCLE_SIZE,
+        {
+          duration: second * 10,
+          easing: Easing.out(Easing.ease),
+        },
+        finished => {
+          if (finished && setTaskStage) {
+            runOnJS(setTaskStage)('done');
+          }
+        },
+      );
+    }
+  }, [taskStage]);
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
   return (
     <View style={{ ...styles.container, paddingBottom }}>
-      <View
-        style={styles.shadowContainer}
-        key={isTaskStarted ? 'start' : 'stop'}
-        onLayout={handleLayout}
-      >
+      <View style={styles.shadowContainer} >
         <View style={styles.innerContainer}>
           <LinearGradient
             colors={gradientColors}
@@ -70,7 +70,7 @@ const Star = ({
             style={styles.gradient}
           />
 
-          {!isTaskStarted && (
+          {taskStage === 'progress' && (
             <Animated.View style={[styles.cover, animatedStyle]} />
           )}
         </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     width: CIRCLE_SIZE,
     height: CIRCLE_SIZE,
     borderRadius: CIRCLE_SIZE / 2,
-    overflow: 'hidden', // ★ 핵심
+    overflow: 'hidden',
     position: 'relative',
   },
 
