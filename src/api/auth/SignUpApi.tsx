@@ -1,6 +1,6 @@
 import { api } from '../axios';
 
-export const signUp = ({
+export const signUpApi = ({
   email,
   password,
   userName,
