@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -29,8 +29,15 @@ const TaskModel: React.FC<TaskModelProps> = ({
   recordContent,
   onClose,
 }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+
   return (
-    <Modal transparent animationType="fade" visible>
+    <Modal
+      transparent
+      animationType="fade"
+      visible={modalVisible}
+      onRequestClose={() => setModalVisible(false)}
+    >
       <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
         <BlurView
           style={StyleSheet.absoluteFill}
