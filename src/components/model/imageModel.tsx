@@ -11,16 +11,18 @@ import {
   Image,
 } from 'react-native';
 import * as ImagePicker from 'react-native-image-picker';
+import { TaskStage } from '../../../types/TaskStage';
 
 interface ImgModelProps {
   onClose: () => void;
-  setTaskStage: (stage: any) => void;
+  setTaskStage: (stage: TaskStage) => void;
 }
 
 const PlusIcon = () => <Text style={modalStyles.plusIcon}>+</Text>;
 
 const ImgModel = ({ onClose, setTaskStage }: ImgModelProps) => {
   const [imageUrl, setImageUrl] = useState('');
+  const [content, setContent] = useState('');
 
   const handleComplete = () => {
     console.log('기록 저장 및 완료');
@@ -79,6 +81,8 @@ const ImgModel = ({ onClose, setTaskStage }: ImgModelProps) => {
               placeholderTextColor="#B0B0B0"
               multiline={true}
               numberOfLines={4}
+              value={content}
+              onChangeText={setContent}
             />
           </View>
 
