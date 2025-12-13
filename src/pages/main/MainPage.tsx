@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Alert, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Alert, Pressable, Modal } from 'react-native';
 import Star from '../../components/Star';
 import { Image } from 'react-native';
 import { IMAGES } from '../../assets';
@@ -9,64 +9,142 @@ import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { differenceInSeconds } from 'date-fns';
+import useTimer from '../../hooks/useTimer';
+import { TaskStage } from '../../../types/TaskStage';
+import ImgModel from '../../components/model/imageModel';
+import { BlurView } from '@react-native-community/blur';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'AlarmPage'>;
 type MainPageRouteProp = RouteProp<RootStackParamList, 'BottomTabNavigator'>;
 
 const MainPage = () => {
+  const { second, setSecond, isPaused, setIsPaused, reset } = useTimer(300);
   const route = useRoute<MainPageRouteProp>();
   const { taskSuccess } = route.params || {};
   const navigation = useNavigation<Nav>();
-  const [isTaskStarted, setIsTaskStarted] = useState(true);
-  const [buttonLabel, setButtonLabel] = useState(false);
-  const [todayTaskLabel, setTodayTaskLabel] = useState(false);
-  const [second, setSecond] = useState<number>(300);
-  const [isPaused, setIsPaused] = useState(true); //멈춤
-  const startTime = useRef<number>(Date.now());
-
-  useEffect(() => {
-    if (isPaused) return;
-    startTime.current = setInterval(() => {
-      setSecond(prev => {
-        if (prev <= 1) {
-          if (startTime.current) {
-            clearInterval(startTime.current);
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (startTime.current) {
-        clearInterval(startTime.current);
-      }
-    };
-  }, [isPaused]);
+  const [taskStage, setTaskStage] = useState<TaskStage>('idle');
 
   const minutes = Math.floor(second / 60);
   const seconds = second % 60;
 
   const timeText = `${minutes}: ${seconds.toString().padStart(2, '0')}`;
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const openModal = () => setIsModalVisible(true);
+  const closeModal = () => setIsModalVisible(false);
+
   const onStartTask = () => {
     Alert.alert('알림', '과제를 시작합니다.');
-    setIsTaskStarted(prev => !prev);
-    setButtonLabel(prev => !prev);
-    setTodayTaskLabel(prev => !prev);
     if (isPaused && second === 0) {
       setSecond(300);
+    }
+    if (taskStage === 'idle') {
+      setTaskStage('progress');
+    } else if (taskStage === 'progress') {
+      setTaskStage('idle');
+    } else if (taskStage === 'done') {
+      Alert.alert('알림', '과제를 완료했습니다.');
+      return;
     }
     setIsPaused(prev => !prev);
     // 네비게이션 로직 또는 API 호출 로직 추가
   };
 
-  return (
-    <View style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* 1. 상단 헤더 (배터리, 시간, 알림) */}
+  const litleTitle = () => {
+    if (taskStage === 'done')
+      return '과제를 해결 하셨으면 빛나는 행성을 눌러주세요';
+    if (taskStage === 'progress')
+      return '빛이 끝날 때 까지 과제를 진행해주세요.';
+    return '오늘의 과제';
+  };
+
+  useEffect(() => {
+    if (taskStage === 'done') {
+      navigation.setOptions({
+        tabBarStyle: { display: 'none' },
+      } as any);
+    } else {
+      navigation.setOptions({
+        tabBarStyle: {
+          height: 100,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          backgroundColor: '#ffffffff',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+        },
+      } as any);
+    }
+  }, [taskStage, navigation]);
+
+  useEffect(() => {
+    if (taskStage === 'done') {
+      const timer = setTimeout(() => {
+        setIsModalVisible(true);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [taskStage]);
+
+  let content;
+
+  if (taskStage === 'done') {
+    content = (
+      <>
+        <View style={styles.DoneContent}>
+          <LinearGradient
+            colors={['#FFFFFF', '#858585ff']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 3 }}
+            style={styles.gradientBox}
+          >
+            <View style={{ height: 300 }}>
+              <Star
+                taskStage={taskStage}
+                setTaskStage={setTaskStage}
+                second={second}
+              />
+            </View>
+
+            <View style={styles.textGroup}>
+              <View style={{ alignItems: 'center' }}>
+                <Text style={styles.subText}>과제를 완료하셨군요.</Text>
+                <Text style={styles.subText}>당신의 색을 찾고있습니다.</Text>
+              </View>
+              <Text style={styles.doneText}>바람 느끼기 완료</Text>
+            </View>
+          </LinearGradient>
+        </View>
+        {isModalVisible && (
+          <BlurView
+            style={StyleSheet.absoluteFill} // 화면 전체를 덮도록 설정
+            blurType="dark" // 어두운 블러 타입
+            blurAmount={15} // 블러 강도
+            reducedTransparencyFallbackColor="#FFFFFF"
+          />
+        )}
+
+        {/* 3. 모달 컴포넌트 */}
+        <Modal
+          animationType="fade"
+          transparent={true} // 블러 뷰가 보이도록 투명하게 설정
+          visible={isModalVisible}
+          onRequestClose={closeModal}
+        >
+          <View style={styles.modalOverlay}>
+            {/* PostCompletionScreen에 닫기 함수 전달 */}
+            <ImgModel onClose={closeModal} setTaskStage={setTaskStage} />
+          </View>
+        </Modal>
+      </>
+    );
+  } else {
+    content = (
+      <>
         <View style={styles.header}>
           {/* 상태바 영역 - 실제 앱에서는 시스템 상태바를 사용하거나 커스텀합니다. */}
           <View style={styles.statusBarPlaceholder}>
@@ -86,7 +164,6 @@ const MainPage = () => {
             </Text>
           </View>
         </View>
-
         {/* 2. 메인 컨텐츠 영역 */}
         <LinearGradient
           colors={['#FFFFFF', '#E1E1E1']}
@@ -94,24 +171,34 @@ const MainPage = () => {
           end={{ x: 0, y: 1 }}
           style={styles.mainContent}
         >
-          <Text style={styles.todayTaskLabel}>
-            {todayTaskLabel
-              ? '빛이 끝날 때 까지 과제를 진행해주세요.'
-              : '오늘의 과제'}
+          <Text style={styles.todayTaskLabel}>{litleTitle()}</Text>
+          <Text style={styles.taskName}>
+            {taskStage === 'idle' || taskStage === 'progress'
+              ? '바람 느끼기'
+              : '누르기'}
           </Text>
-          <Text style={styles.taskName}>바람 느끼기</Text>
 
-          <Star isTaskStarted={isTaskStarted} second={second} />
+          <Star
+            taskStage={taskStage}
+            setTaskStage={setTaskStage}
+            second={second}
+          />
 
           <View style={styles.buttonZone}>
             <MainButton
               onPress={onStartTask}
-              label={buttonLabel}
               second={timeText}
+              taskStage={taskStage}
             />
           </View>
         </LinearGradient>
-      </View>
+      </>
+    );
+  }
+
+  return (
+    <View style={styles.safeArea}>
+      <View style={styles.container}>{content}</View>
     </View>
   );
 };
@@ -154,7 +241,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   quoteBox: {
-    backgroundColor: '#F5F5F5', // 밝은 배경색 (배경의 그림자 느낌)
+    backgroundColor: '#F5F5F5',
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 10,
@@ -171,6 +258,40 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
     backgroundColor: '#fff',
   },
+
+  DoneContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gradientBox: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+
+  textGroup: {
+    marginBottom: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 10,
+  },
+
+  doneText: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+
+  subText: {
+    fontSize: 16,
+    color: '#585858',
+  },
+
   todayTaskLabel: {
     fontSize: 16,
     color: '#777',
@@ -186,6 +307,12 @@ const styles = StyleSheet.create({
     height: '30%',
     alignItems: 'center',
     backgroundColor: 'transparent',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 15,
   },
 });
 
