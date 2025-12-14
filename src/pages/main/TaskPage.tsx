@@ -19,7 +19,9 @@ export default function TaskPage() {
   const { taskSuccess } = route.params || {};
   const navigation = useNavigation<Nav>();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [completedList, setCompletedList] = useState([]);
+  const [completedList, setCompletedList] = useState<
+    { userMissionId: number; missionTitle: string }[]
+  >([]);
 
   useEffect(() => {
     const fetchCompletedList = async () => {
@@ -29,7 +31,7 @@ export default function TaskPage() {
         const { accessToken } = JSON.parse(auth);
         const response = await completedListApi({ accessToken });
         setCompletedList(response.data);
-        console.log(response);
+        console.log(response.data);
       } catch (error) {
         console.error(error);
       }
@@ -76,14 +78,11 @@ export default function TaskPage() {
           {/*완료한 과제 */}
           <Pressable style={style.completedTask} onPress={onClickModel}>
             <Text style={style.completedTaskText}>완료한 과제</Text>
-            {Array.from(
-              { length: completedTaskList.length },
-              (_, index) => index,
-            ).map(index => (
-              <View key={index} style={style.completedTaskContent}>
+            {completedTaskList.map(item => (
+              <View key={item.userMissionId} style={style.completedTaskContent}>
                 <View style={style.completedTaskContentItem}>
                   <Image source={IMAGES.checkGreen} />
-                  <Text>{completedTaskList[index].content}</Text>
+                  <Text>{item.missionTitle}</Text>
                 </View>
               </View>
             ))}
