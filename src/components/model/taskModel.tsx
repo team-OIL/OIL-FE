@@ -17,7 +17,7 @@ const { width } = Dimensions.get('window');
 interface TaskModelProps {
   taskTitle: string;
   completionDate: string;
-  recordImageUrl: string;
+  recordImageUrl: null;
   recordContent: string;
   onClose: () => void;
 }
@@ -29,6 +29,13 @@ const TaskModel: React.FC<TaskModelProps> = ({
   recordContent,
   onClose,
 }) => {
+  console.log(
+    'taskModel',
+    taskTitle,
+    completionDate,
+    recordImageUrl,
+    recordContent,
+  );
   const [modalVisible, setModalVisible] = useState(false);
 
   return (

@@ -9,6 +9,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import TaskModel from '../../components/model/taskModel';
 import { completedListApi } from '../../api/Mission/completedList';
+import { missionDetailApi } from '../../api/Mission/missionDetail';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'AlarmPage'>;
@@ -22,6 +23,12 @@ export default function TaskPage() {
   const [completedList, setCompletedList] = useState<
     { userMissionId: number; missionTitle: string }[]
   >([]);
+  const [missionDetail, setMissionDetail] = useState<{
+    missionContent: string;
+    resultText: string;
+    resultImageUrl: null;
+    completedAt: string;
+  }>({});
 
   useEffect(() => {
     const fetchCompletedList = async () => {
@@ -31,7 +38,8 @@ export default function TaskPage() {
         const { accessToken } = JSON.parse(auth);
         const response = await completedListApi({ accessToken });
         setCompletedList(response.data);
-        console.log(response.data);
+
+        console.log('completedList', response.data);
       } catch (error) {
         console.error(error);
       }
@@ -42,7 +50,21 @@ export default function TaskPage() {
   const openModal = () => setIsModalVisible(true);
   const closeModal = () => setIsModalVisible(false);
 
-  const onClickModel = () => {
+  const onClickModel = async (userMissionId: number) => {
+    const auth = await EncryptedStorage.getItem('auth');
+    if (!auth) return;
+    const { accessToken } = JSON.parse(auth);
+
+    const missionDetailResponse = await missionDetailApi({
+      accessToken,
+      userMissionId,
+    });
+    setMissionDetail({
+      missionContent: missionDetailResponse.data.missionContent,
+      completedAt: missionDetailResponse.data.completedAt,
+      resultImageUrl: missionDetailResponse.data.resultImageUrl,
+      resultText: missionDetailResponse.data.resultText,
+    });
     setIsModalVisible(true);
   };
 
@@ -76,25 +98,30 @@ export default function TaskPage() {
             </View>
           </View>
           {/*완료한 과제 */}
-          <Pressable style={style.completedTask} onPress={onClickModel}>
+          <Pressable style={style.completedTask}>
             <Text style={style.completedTaskText}>완료한 과제</Text>
             {completedTaskList.map(item => (
-              <View key={item.userMissionId} style={style.completedTaskContent}>
-                <View style={style.completedTaskContentItem}>
-                  <Image source={IMAGES.checkGreen} />
-                  <Text>{item.missionTitle}</Text>
+              <Pressable
+                key={item.userMissionId}
+                onPress={() => onClickModel(item.userMissionId)}
+              >
+                <View style={style.completedTaskContent}>
+                  <View style={style.completedTaskContentItem}>
+                    <Image source={IMAGES.checkGreen} />
+                    <Text>{item.missionTitle}</Text>
+                  </View>
                 </View>
-              </View>
+              </Pressable>
             ))}
           </Pressable>
         </View>
       </View>
       {isModalVisible && (
         <TaskModel
-          taskTitle="오늘의 과제"
-          completionDate="2025-12-13"
-          recordImageUrl="https://via.placeholder.com/150"
-          recordContent="오늘의 과제를 완료했습니다."
+          taskTitle={missionDetail.missionContent}
+          completionDate={missionDetail.completedAt}
+          recordImageUrl={missionDetail.resultImageUrl}
+          recordContent={missionDetail.resultText}
           onClose={closeModal}
         />
       )}
