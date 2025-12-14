@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Star from '../../components/Star';
 import { IMAGES } from '../../assets';
@@ -8,6 +8,8 @@ import type { RootStackParamList } from '../../../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import TaskModel from '../../components/model/taskModel';
+import { completedListApi } from '../../api/Mission/completedList';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'AlarmPage'>;
 type TaskPageRouteProp = RouteProp<RootStackParamList, 'BottomTabNavigator'>;
@@ -17,6 +19,23 @@ export default function TaskPage() {
   const { taskSuccess } = route.params || {};
   const navigation = useNavigation<Nav>();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [completedList, setCompletedList] = useState([]);
+
+  useEffect(() => {
+    const fetchCompletedList = async () => {
+      try {
+        const auth = await EncryptedStorage.getItem('auth');
+        if (!auth) return;
+        const { accessToken } = JSON.parse(auth);
+        const response = await completedListApi({ accessToken });
+        setCompletedList(response.data);
+        console.log(response);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchCompletedList();
+  }, []);
 
   const openModal = () => setIsModalVisible(true);
   const closeModal = () => setIsModalVisible(false);
@@ -25,13 +44,8 @@ export default function TaskPage() {
     setIsModalVisible(true);
   };
 
-  const completedTaskList = [
-    { id: 1, content: '10분 산책하기' },
-    { id: 2, content: '물 2잔 마시기' },
-    { id: 3, content: '스트레칭 5분' },
-    { id: 4, content: '스트레칭 5분' },
-    { id: 5, content: '스트레칭 5분' },
-  ];
+  const completedTaskList = completedList.slice(0, 5);
+
   return (
     <View style={style.safeArea}>
       <View style={style.container}>
