@@ -6,20 +6,20 @@ import { Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { RootStackParamList } from '../../../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useRoute, RouteProp } from '@react-navigation/native';
 import TaskModel from '../../components/model/taskModel';
 import { completedListApi } from '../../api/Mission/completedList';
 import { missionDetailApi } from '../../api/Mission/missionDetail';
 import EncryptedStorage from 'react-native-encrypted-storage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'AlarmPage'>;
-type TaskPageRouteProp = RouteProp<RootStackParamList, 'BottomTabNavigator'>;
+type taskData = {
+  missionContent: string;
+};
 type TaskPageProps = {
-  taskData: any;
-  taskSuccess: boolean;
+  taskData: taskData | null;
 };
 
-export default function TaskPage({ taskData, taskSuccess }: TaskPageProps) {
+export default function TaskPage({ taskData }: TaskPageProps) {
   const navigation = useNavigation<Nav>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [completedList, setCompletedList] = useState<
@@ -28,28 +28,28 @@ export default function TaskPage({ taskData, taskSuccess }: TaskPageProps) {
   const [missionDetail, setMissionDetail] = useState<{
     missionContent: string;
     resultText: string;
-    resultImageUrl: null;
+    resultImageUrl: string | null;
     completedAt: string;
-  }>({});
-
-  console.log('taskData333', taskData);
+  } | null>(null);
 
   useEffect(() => {
-    const fetchCompletedList = async () => {
-      try {
-        const auth = await EncryptedStorage.getItem('auth');
-        if (!auth) return;
-        const { accessToken } = JSON.parse(auth);
-        const response = await completedListApi({ accessToken });
-        setCompletedList(response.data);
-
-        console.log('completedList', response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
     fetchCompletedList();
   }, []);
+
+  const fetchCompletedList = async () => {
+    try {
+      const auth = await EncryptedStorage.getItem('auth');
+      if (!auth) return;
+
+      const { accessToken } = JSON.parse(auth);
+      const response = await completedListApi({ accessToken });
+      setCompletedList(response.data);
+
+      console.log('completedList', response.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const openModal = () => setIsModalVisible(true);
   const closeModal = () => setIsModalVisible(false);
@@ -97,8 +97,13 @@ export default function TaskPage({ taskData, taskSuccess }: TaskPageProps) {
           <View style={style.todayTask}>
             <Text style={style.todayTaskText}>오늘의 과제</Text>
             <View style={style.todayTaskContent}>
-              <Image source={taskSuccess ? IMAGES.checkGreen : IMAGES.check} />
-              <Text>{taskData?.missionContent}</Text>
+              <Image source={!taskData ? IMAGES.checkGreen : IMAGES.check} />
+              <Text>
+                {taskData
+                  ? taskData?.missionContent
+                  : completedList[0]?.missionTitle ??
+                    '진행 중인 과제가 없습니다.'}
+              </Text>
             </View>
           </View>
           {/*완료한 과제 */}
@@ -122,10 +127,10 @@ export default function TaskPage({ taskData, taskSuccess }: TaskPageProps) {
       </View>
       {isModalVisible && (
         <TaskModel
-          taskTitle={missionDetail.missionContent}
-          completionDate={missionDetail.completedAt}
-          recordImageUrl={missionDetail.resultImageUrl}
-          recordContent={missionDetail.resultText}
+          taskTitle={missionDetail?.missionContent}
+          completionDate={missionDetail?.completedAt}
+          recordImageUrl={missionDetail?.resultImageUrl}
+          recordContent={missionDetail?.resultText}
           onClose={closeModal}
         />
       )}

@@ -42,12 +42,13 @@ const BottomTabNavigator = () => {
         const res = await todayApi({ accessToken });
         setTaskData(res.data);
         console.log('today', res.data);
-        await EncryptedStorage.setItem(
-          'userMissionId',
-          JSON.stringify(res.data.userMissionId),
-        );
-      } catch (err) {
-        console.log(err);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          console.log('404');
+          setTaskData(null);
+        } else {
+          console.log(err);
+        }
       }
     };
 
