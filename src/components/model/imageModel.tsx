@@ -36,10 +36,16 @@ const ImgModel = ({ onClose, setTaskStage, taskData }: ImgModelProps) => {
 
       const savedId = await EncryptedStorage.getItem('userMissionId');
       const userMissionId = savedId ? JSON.parse(savedId) : null;
+
+      if (!userMissionId) {
+        console.log('userMissionId가 없습니다.');
+        return;
+      }
+
       console.log('userMissionId', userMissionId);
-      completeApi({
+      await completeApi({
         accessToken,
-        usermissionid: Number(userMissionId),
+        userMissionid: Number(userMissionId),
         resultText: content,
         resultImageUrl: imageUrl,
       });
@@ -47,7 +53,7 @@ const ImgModel = ({ onClose, setTaskStage, taskData }: ImgModelProps) => {
       setTaskStage('idle');
       onClose();
     } catch (e) {
-      console.log(e);
+      console.log('Failed to complete mission:', e);
     }
   };
 
@@ -91,7 +97,7 @@ const ImgModel = ({ onClose, setTaskStage, taskData }: ImgModelProps) => {
             과제를 완료했습니다.{'\n'}오늘의 추억을 사진과 글로 남겨주세요.
           </Text>
           <Text style={modalStyles.taskTitle}>
-            {taskData.missionContent} 완료
+            {taskData?.missionContent} 완료
           </Text>
         </View>
 
