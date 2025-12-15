@@ -12,22 +12,53 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import { TaskStage } from '../../../types/TaskStage';
+import { completeApi } from '../../api/Mission/complete';
+import EncryptedStorage from 'react-native-encrypted-storage';
+
+interface TaskData {
+  missionContent: string;
+}
 
 interface ImgModelProps {
   onClose: () => void;
   setTaskStage: (stage: TaskStage) => void;
+  taskData: TaskData;
 }
 
 const PlusIcon = () => <Text style={modalStyles.plusIcon}>+</Text>;
 
-const ImgModel = ({ onClose, setTaskStage }: ImgModelProps) => {
+const ImgModel = ({ onClose, setTaskStage, taskData }: ImgModelProps) => {
   const [imageUrl, setImageUrl] = useState('');
   const [content, setContent] = useState('');
 
-  const handleComplete = () => {
-    console.log('기록 저장 및 완료');
-    setTaskStage('idle');
-    onClose();
+  const handleComplete = async () => {
+    try {
+      const auth = await EncryptedStorage.getItem('auth');
+      if (!auth) return;
+
+      const { accessToken } = JSON.parse(auth);
+
+      const savedId = await EncryptedStorage.getItem('userMissionId');
+      const userMissionId = savedId ? JSON.parse(savedId) : null;
+
+      if (!userMissionId) {
+        console.log('userMissionId가 없습니다.');
+        return;
+      }
+
+      console.log('userMissionId', userMissionId);
+      await completeApi({
+        accessToken,
+        userMissionid: Number(userMissionId),
+        resultText: content,
+        resultImageUrl: imageUrl,
+      });
+      console.log('기록 저장 및 완료');
+      setTaskStage('idle');
+      onClose();
+    } catch (e) {
+      console.log('Failed to complete mission:', e);
+    }
   };
 
   const handleAddImage = () => {
@@ -69,7 +100,9 @@ const ImgModel = ({ onClose, setTaskStage }: ImgModelProps) => {
           <Text style={modalStyles.instructionText}>
             과제를 완료했습니다.{'\n'}오늘의 추억을 사진과 글로 남겨주세요.
           </Text>
-          <Text style={modalStyles.taskTitle}>바람 느끼기 완료</Text>
+          <Text style={modalStyles.taskTitle}>
+            {taskData?.missionContent} 완료
+          </Text>
         </View>
 
         <View style={modalStyles.card}>
