@@ -16,6 +16,5 @@ export const updateAlarmSetting = ({
   const body = {
     alarmEnabled,
   };
-  console.log('updateAlarmSetting', body);
   return api.patch('/users/settings/alarm', body, { headers });
 };

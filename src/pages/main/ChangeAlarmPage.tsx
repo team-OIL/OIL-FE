@@ -78,9 +78,13 @@ function ChangeAlarmPage() {
     }
   };
 
-  const onClickChangeAlarm = () => {
-    onChangeTime();
-    onChangeAlarmSetting();
+  const onClickChangeAlarm = async () => {
+    try {
+      await onChangeTime();
+      await onChangeAlarmSetting();
+    } catch (e) {
+      console.log('Error in onClickChangeAlarm:', e);
+    }
   };
 
   const onChangeTime = async () => {
