@@ -9,5 +9,5 @@ export function usePushToken(onToken: (token: string) => void) {
 
     const unsubscribe = onFcmTokenRefresh(onToken);
     return unsubscribe;
-  }, []);
+  }, [onToken]);
 }

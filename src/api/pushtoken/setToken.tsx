@@ -12,6 +12,5 @@ export const setTokenApi = ({ accessToken, deviceToken }: CompleteApi) => {
   const data = {
     deviceToken,
   };
-  console.log('setTokenApi', data);
   return api.patch(`/push-token`, data, { headers });
 };
