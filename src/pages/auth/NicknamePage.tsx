@@ -8,6 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../types/navigation';
 import { signUpApi } from '../../api/auth/SignUpApi';
 import { RouteProp } from '@react-navigation/native';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 type SignUpRouteProp = RouteProp<RootStackParamList, 'NicknamePage'>;
 type Nav = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
@@ -34,6 +35,10 @@ function NicknamePage({ route }: { route: SignUpRouteProp }) {
         missionTime: TastTime,
         isAlarmEnabled: isAgreedToReceive,
       });
+      await EncryptedStorage.setItem(
+        'alarm',
+        JSON.stringify({ isAgreedToReceive, TastTime }),
+      );
       navigation.navigate('SignIn', { name: nickname });
     } catch (e) {
       console.log('에러 발생', e);

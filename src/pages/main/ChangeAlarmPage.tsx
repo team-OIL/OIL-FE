@@ -1,40 +1,77 @@
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Switch, Alert } from 'react-native';
 import DismissKeyboardView from '../../components/DismissKeyboardView';
 import TimePickerScreen from '../../components/Time/TimePickerScreen';
 import Button from '../../components/button/button';
+import { updateMissionReceiveTime } from '../../api/alarm/updateMissionReceiveTime';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../types/navigation';
-import { RouteProp } from '@react-navigation/native';
 
-type Nav = NativeStackNavigationProp<RootStackParamList, 'ChangeAlarmPage'>;
-type SignUpRouteProp = RouteProp<RootStackParamList, 'ChangeAlarmPage'>;
-
-function ChangeAlarmPage({ route }: { route: SignUpRouteProp }) {
-  //   const { email, password } = route.params;
-  const navigation = useNavigation<Nav>();
+function ChangeAlarmPage() {
+  const navigation = useNavigation();
   const [isAgreedToReceive, setIsAgreedToReceive] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
+  const [baseTastTime, setBaseTastTime] = useState('');
   const [ampm, setAmpm] = useState('오후');
   const [hour, setHour] = useState('07');
   const [minute, setMinute] = useState('35');
+  const hourNum = Number(hour);
+  const hour24 = ampm === '오전' ? hourNum % 12 : (hourNum % 12) + 12;
+  const hourString = String(hour24).padStart(2, '0');
+  const ChangeTastTime = `${hourString}:${minute}`;
 
-  const TastTime = `${hour}:${minute}`;
+  useEffect(() => {
+    if (!baseTastTime) return;
+
+    const [h, m] = baseTastTime.split(':');
+    const hourNum = Number(h);
+
+    const isPM = hourNum >= 12;
+    const convertedHour =
+      hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+
+    setAmpm(isPM ? '오후' : '오전');
+    setHour(String(convertedHour).padStart(2, '0'));
+    setMinute(m);
+  }, [baseTastTime]);
+
+  useEffect(() => {
+    const loadAccessToken = async () => {
+      const auth = await EncryptedStorage.getItem('auth');
+      if (!auth) return;
+      const { accessToken } = JSON.parse(auth);
+      setAccessToken(accessToken);
+    };
+    loadAccessToken();
+  }, []);
+
+  useEffect(() => {
+    const loadAgreement = async () => {
+      const value = await EncryptedStorage.getItem('alarm');
+      const { isAgreedToReceive, TastTime } = value ? JSON.parse(value) : false;
+      setIsAgreedToReceive(isAgreedToReceive);
+      setBaseTastTime(TastTime);
+    };
+    loadAgreement();
+  }, []);
 
   // 알림 수신 동의 토글
-  const toggleSwitch = () => {
+  const toggleSwitch = async () => {
     setIsAgreedToReceive(prevState => !prevState);
   };
 
-  // '다음' 버튼 클릭 핸들러
-  //   const onPressNext = useCallback(() => {
-  //     navigation.navigate('NicknamePage', {
-  //       email,
-  //       password,
-  //       isAgreedToReceive,
-  //       TastTime,
-  //     });
-  //   }, [isAgreedToReceive]);
+  const onChangeTime = async () => {
+    try {
+      await updateMissionReceiveTime({
+        accessToken,
+        MissionTime: ChangeTastTime,
+      });
+      Alert.alert('알림', '알림 시간이 변경되었습니다.');
+      navigation.goBack();
+    } catch (e) {
+      console.log('에러 발생', e);
+    }
+  };
 
   return (
     <DismissKeyboardView style={styles.fullScreen}>
@@ -89,7 +126,7 @@ function ChangeAlarmPage({ route }: { route: SignUpRouteProp }) {
         </View>
 
         <View style={styles.buttonZone}>
-          <Button label="다음" />
+          <Button label="변경" onPress={onChangeTime} />
         </View>
       </View>
     </DismissKeyboardView>

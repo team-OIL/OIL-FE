@@ -18,8 +18,10 @@ function AlarmSettingsPage({ route }: { route: SignUpRouteProp }) {
   const [ampm, setAmpm] = useState('오후');
   const [hour, setHour] = useState('07');
   const [minute, setMinute] = useState('35');
-
-  const TastTime = `${hour}:${minute}`;
+  const hourNum = Number(hour);
+  const hour24 = ampm === '오전' ? hourNum % 12 : (hourNum % 12) + 12;
+  const hourString = String(hour24).padStart(2, '0');
+  const TastTime = `${hourString}:${minute}`;
 
   // 알림 수신 동의 토글
   const toggleSwitch = () => {

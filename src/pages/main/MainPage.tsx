@@ -26,12 +26,8 @@ type Advice = {
   authorProfile: string;
   message: string;
 };
-type taskData = {
-  userMissionId: number;
-  missionContent: string;
-};
 type TaskPageProps = {
-  taskData: taskData;
+  taskData: any;
   taskSuccess: boolean;
 };
 
@@ -271,6 +267,7 @@ const MainPage = ({ taskData }: TaskPageProps) => {
             taskStage={taskStage}
             setTaskStage={setTaskStage}
             second={second}
+            taskData={taskData}
           />
 
           <View style={styles.buttonZone}>
