@@ -65,12 +65,16 @@ function ChangeAlarmPage() {
     const newState = !isChangeAgreedToReceive;
     setIsChangeAgreedToReceive(newState);
 
-    // Persist to storage
-    const alarmData = {
-      isAgreedToReceive: newState,
-      TastTime: ChangeTastTime,
-    };
-    await EncryptedStorage.setItem('alarm', JSON.stringify(alarmData));
+    try {
+      const alarmData = {
+        isAgreedToReceive: newState,
+        TastTime: ChangeTastTime,
+      };
+      await EncryptedStorage.setItem('alarm', JSON.stringify(alarmData));
+    } catch (error) {
+      console.error('Failed to save consent preference:', error);
+      setIsChangeAgreedToReceive(!newState);
+    }
   };
 
   const onChangeTime = async () => {
