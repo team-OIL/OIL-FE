@@ -10,11 +10,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import { TaskStage } from '../../types/TaskStage';
 
+interface TaskData {
+  durationTime: number;
+}
 interface StarProps {
   paddingBottom?: number;
   taskStage?: TaskStage;
   second?: number;
   setTaskStage?: React.Dispatch<React.SetStateAction<TaskStage>>;
+  taskData?: TaskData;
 }
 
 const CIRCLE_SIZE = 250;
@@ -24,6 +28,7 @@ const Star = ({
   taskStage,
   second = 300,
   setTaskStage,
+  taskData,
 }: StarProps) => {
   const topColors = ['#130071', '#E380FF'];
   const bottomColors = ['#FF9747', '#650027'];
@@ -43,7 +48,7 @@ const Star = ({
       translateY.value = withTiming(
         -CIRCLE_SIZE,
         {
-          duration: second * 1320,
+          duration: second * taskData?.durationTime,
           easing: Easing.out(Easing.ease),
         },
         finished => {
@@ -60,7 +65,7 @@ const Star = ({
   }));
   return (
     <View style={{ ...styles.container, paddingBottom }}>
-      <View style={styles.shadowContainer} >
+      <View style={styles.shadowContainer}>
         <View style={styles.innerContainer}>
           <LinearGradient
             colors={gradientColors}

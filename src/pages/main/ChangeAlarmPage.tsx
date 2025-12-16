@@ -1,48 +1,106 @@
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Switch, Alert } from 'react-native';
 import DismissKeyboardView from '../../components/DismissKeyboardView';
 import TimePickerScreen from '../../components/Time/TimePickerScreen';
 import Button from '../../components/button/button';
+import { updateMissionReceiveTime } from '../../api/alarm/updateMissionReceiveTime';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../../types/navigation';
-import { RouteProp } from '@react-navigation/native';
 
-type Nav = NativeStackNavigationProp<RootStackParamList, 'SignIn'>;
-type SignUpRouteProp = RouteProp<RootStackParamList, 'AlarmSettings'>;
-
-function AlarmSettingsPage({ route }: { route: SignUpRouteProp }) {
-  const { email, password } = route.params;
-  const navigation = useNavigation<Nav>();
-  const [isAgreedToReceive, setIsAgreedToReceive] = useState(false);
+function ChangeAlarmPage() {
+  const navigation = useNavigation();
+  const [isChangeAgreedToReceive, setIsChangeAgreedToReceive] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
+  const [baseTastTime, setBaseTastTime] = useState('');
   const [ampm, setAmpm] = useState('오후');
   const [hour, setHour] = useState('07');
   const [minute, setMinute] = useState('35');
   const hourNum = Number(hour);
   const hour24 = ampm === '오전' ? hourNum % 12 : (hourNum % 12) + 12;
   const hourString = String(hour24).padStart(2, '0');
-  const TastTime = `${hourString}:${minute}`;
+  const ChangeTastTime = `${hourString}:${minute}`;
+
+  useEffect(() => {
+    if (!baseTastTime) return;
+
+    const [h, m] = baseTastTime.split(':');
+    const hourNum = Number(h);
+
+    const isPM = hourNum >= 12;
+    const convertedHour =
+      hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+
+    setAmpm(isPM ? '오후' : '오전');
+    setHour(String(convertedHour).padStart(2, '0'));
+    setMinute(m);
+  }, [baseTastTime]);
+
+  useEffect(() => {
+    const loadAccessToken = async () => {
+      const auth = await EncryptedStorage.getItem('auth');
+      if (!auth) return;
+      const { accessToken } = JSON.parse(auth);
+      setAccessToken(accessToken);
+    };
+    loadAccessToken();
+  }, []);
+
+  useEffect(() => {
+    const loadAgreement = async () => {
+      const value = await EncryptedStorage.getItem('alarm');
+      const { isAgreedToReceive, TastTime } = value
+        ? JSON.parse(value)
+        : {
+            isAgreedToReceive: isChangeAgreedToReceive,
+            TastTime: ChangeTastTime,
+          };
+      setIsChangeAgreedToReceive(isAgreedToReceive);
+      setBaseTastTime(TastTime);
+    };
+    loadAgreement();
+  }, []);
 
   // 알림 수신 동의 토글
-  const toggleSwitch = () => {
-    setIsAgreedToReceive(prevState => !prevState);
+  const toggleSwitch = async () => {
+    const newState = !isChangeAgreedToReceive;
+    setIsChangeAgreedToReceive(newState);
+
+    try {
+      const alarmData = {
+        isAgreedToReceive: newState,
+        TastTime: ChangeTastTime,
+      };
+      await EncryptedStorage.setItem('alarm', JSON.stringify(alarmData));
+    } catch (error) {
+      console.error('Failed to save consent preference:', error);
+      setIsChangeAgreedToReceive(!newState);
+    }
   };
 
-  // '다음' 버튼 클릭 핸들러
-  const onPressNext = useCallback(() => {
-    navigation.navigate('NicknamePage', {
-      email,
-      password,
-      isAgreedToReceive,
-      TastTime,
-    });
-  }, [isAgreedToReceive]);
+  const onChangeTime = async () => {
+    try {
+      await updateMissionReceiveTime({
+        accessToken,
+        MissionTime: ChangeTastTime,
+      });
+      const alarmData = {
+        isChangeAgreedToReceive,
+        TastTime: ChangeTastTime,
+      };
+      await EncryptedStorage.setItem('alarm', JSON.stringify(alarmData));
+      Alert.alert('알림', '알림 시간이 변경되었습니다.');
+      navigation.goBack();
+    } catch (e) {
+      console.log('에러 발생', e);
+      Alert.alert('오류', '알림 시간 변경에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
 
   return (
     <DismissKeyboardView style={styles.fullScreen}>
       <View style={styles.container}>
         {/* 헤딩 섹션 */}
-        <Text style={styles.mainTitle}>알림 동의 및 설정</Text>
+        <Text style={styles.mainTitle}>알림 시간 변경</Text>
 
         {/* --- 알림 수신 동의 섹션 --- */}
         <View style={styles.section}>
@@ -54,9 +112,9 @@ function AlarmSettingsPage({ route }: { route: SignUpRouteProp }) {
             {/* AOS 표준 색상: 활성화 시 기본 색상, 비활성화 시 회색 계열 */}
             <Switch
               trackColor={{ false: '#e0e0e0', true: '#a0a0a0' }}
-              thumbColor={isAgreedToReceive ? '#363636' : '#f4f3f4'}
+              thumbColor={isChangeAgreedToReceive ? '#363636' : '#f4f3f4'}
               onValueChange={toggleSwitch}
-              value={isAgreedToReceive}
+              value={isChangeAgreedToReceive}
             />
           </View>
         </View>
@@ -65,7 +123,7 @@ function AlarmSettingsPage({ route }: { route: SignUpRouteProp }) {
           <Text
             style={[
               styles.sectionTitle,
-              !isAgreedToReceive && styles.disabledText,
+              !isChangeAgreedToReceive && styles.disabledText,
             ]}
           >
             알림 시간 설정
@@ -73,7 +131,7 @@ function AlarmSettingsPage({ route }: { route: SignUpRouteProp }) {
           <Text
             style={[
               styles.descriptionText,
-              !isAgreedToReceive && styles.disabledText,
+              !isChangeAgreedToReceive && styles.disabledText,
             ]}
           >
             푸시 알림 수신에 동의하십니까?
@@ -91,7 +149,7 @@ function AlarmSettingsPage({ route }: { route: SignUpRouteProp }) {
         </View>
 
         <View style={styles.buttonZone}>
-          <Button label="다음" onPress={onPressNext} />
+          <Button label="변경" onPress={onChangeTime} />
         </View>
       </View>
     </DismissKeyboardView>
@@ -181,4 +239,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AlarmSettingsPage;
+export default ChangeAlarmPage;
