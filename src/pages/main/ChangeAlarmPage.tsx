@@ -7,6 +7,7 @@ import { updateMissionReceiveTime } from '../../api/alarm/updateMissionReceiveTi
 import { updateAlarmSetting } from '../../api/alarm/updateAlarmSetting';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { useNavigation } from '@react-navigation/native';
+import { deleteTokenApi } from '../../api/pushtoken/deleteToken';
 
 function ChangeAlarmPage() {
   const navigation = useNavigation();
@@ -79,9 +80,17 @@ function ChangeAlarmPage() {
   };
 
   const onClickChangeAlarm = async () => {
+    if (!accessToken) {
+      Alert.alert(
+        '오류',
+        '인증 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.',
+      );
+      return;
+    }
     try {
       await onChangeTime();
       await onChangeAlarmSetting();
+      await deleteTokenApi({ accessToken });
     } catch (e) {
       console.log('Error in onClickChangeAlarm:', e);
     }
